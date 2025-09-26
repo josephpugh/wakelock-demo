@@ -8,5 +8,11 @@ export default defineConfig({
     host: '127.0.0.1',
     https: false,
     allowedHosts: true
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: './setupTests.ts',
+    css: true,
+    restoreMocks: true,
   }
 })
