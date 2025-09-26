@@ -114,6 +114,10 @@ describe('SignaturePad', () => {
   it('draws strokes on pointer interaction and supports undo/clear', () => {
     const { canvas, ctx } = setup();
 
+    const saveButtons = screen.getAllByRole('button', { name: /save png/i });
+    const saveButton = saveButtons[saveButtons.length - 1];
+    expect(saveButton).toBeDisabled();
+
     const down = createPointerEvent('pointerdown', canvas, { clientX: 10, clientY: 10 });
     const move = createPointerEvent('pointermove', canvas, { clientX: 25, clientY: 25 });
     const up = createPointerEvent('pointerup', canvas, { clientX: 40, clientY: 40 });
@@ -125,18 +129,33 @@ describe('SignaturePad', () => {
     });
 
     expect(ctx.__getEvents().length).toBeGreaterThan(0);
+    expect(saveButton).not.toBeDisabled();
 
     const undoButtons = screen.getAllByRole('button', { name: /undo/i });
     const undoButton = undoButtons[undoButtons.length - 1];
     ctx.__clearEvents();
-    fireEvent.click(undoButton);
+    act(() => {
+      fireEvent.click(undoButton);
+    });
     expect(ctx.__getEvents().some((event) => event.type === 'clearRect')).toBe(true);
+    expect(saveButton).toBeDisabled();
+
+    // Re-draw to validate clear behaviour after content exists again
+    act(() => {
+      canvas.dispatchEvent(down);
+      canvas.dispatchEvent(move);
+      window.dispatchEvent(up);
+    });
+    expect(saveButton).not.toBeDisabled();
 
     const clearButtons = screen.getAllByRole('button', { name: /clear/i });
     const clearButton = clearButtons[clearButtons.length - 1];
     ctx.__clearEvents();
-    fireEvent.click(clearButton);
+    act(() => {
+      fireEvent.click(clearButton);
+    });
     expect(ctx.__getEvents().some((event) => event.type === 'clearRect')).toBe(true);
+    expect(saveButton).toBeDisabled();
   });
 
   it('invokes onSave with a blob when Save PNG is clicked', async () => {
@@ -147,9 +166,22 @@ describe('SignaturePad', () => {
       callback?.(new Blob(['test'], { type: 'image/png' }));
     });
 
+    const down = createPointerEvent('pointerdown', canvas, { clientX: 10, clientY: 10 });
+    const move = createPointerEvent('pointermove', canvas, { clientX: 20, clientY: 20 });
+    const up = createPointerEvent('pointerup', canvas, { clientX: 30, clientY: 30 });
+
+    act(() => {
+      canvas.dispatchEvent(down);
+      canvas.dispatchEvent(move);
+      window.dispatchEvent(up);
+    });
+
+    const saveButtons = screen.getAllByRole('button', { name: /save png/i });
+    const saveButton = saveButtons[saveButtons.length - 1];
+    expect(saveButton).not.toBeDisabled();
+
     await act(async () => {
-      const saveButtons = screen.getAllByRole('button', { name: /save png/i });
-      fireEvent.click(saveButtons[saveButtons.length - 1]);
+      fireEvent.click(saveButton);
     });
 
     expect(onSave).toHaveBeenCalledTimes(1);

@@ -25,6 +25,7 @@ export default function SignaturePadFixed({
   const [portrait, setPortrait] = useState(
     typeof window !== "undefined" ? window.matchMedia("(orientation: portrait)").matches : false
   );
+  const [hasDrawing, setHasDrawing] = useState(false);
 
   // resize canvas to CSS size with DPR
   const resizeCanvas = () => {
@@ -103,6 +104,7 @@ export default function SignaturePadFixed({
       canvas.releasePointerCapture(e.pointerId);
       if (currentRef.current && currentRef.current.points.length) {
         pathsRef.current.push(currentRef.current);
+        setHasDrawing(true);
       }
       currentRef.current = null;
       e.preventDefault();
@@ -151,13 +153,16 @@ export default function SignaturePadFixed({
   const clear = () => {
     pathsRef.current = [];
     currentRef.current = null;
+    setHasDrawing(false);
     redraw();
   };
   const undo = () => {
     pathsRef.current.pop();
+    setHasDrawing(pathsRef.current.length > 0);
     redraw();
   };
   const savePng = () => {
+    if (!hasDrawing) return;
     const canvas = canvasRef.current!;
     canvas.toBlob((blob) => {
       if (!blob) return;
@@ -252,7 +257,9 @@ export default function SignaturePadFixed({
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={undo}>Undo</button>
           <button onClick={clear}>Clear</button>
-          <button onClick={savePng}>Save PNG</button>
+          <button onClick={savePng} disabled={!hasDrawing}>
+            Save PNG
+          </button>
         </div>
       </div>
     </div>
