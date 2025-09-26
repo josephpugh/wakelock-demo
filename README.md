@@ -47,6 +47,22 @@ src/
 - `npm run build` – create a production build in `dist/`.
 - `npm run preview` – serve the production build locally.
 - `npm run lint` – run ESLint with the project configuration.
+- `npm run test` – execute the Vitest suite (WakeLock recorder and SignaturePad coverage).
+
+## Testing
+
+The project uses [Vitest](https://vitest.dev/) with React Testing Library. The current suite covers:
+
+- Wake lock + recorder lifecycle, ensuring permissions, wake-lock acquisition, and cleanup all behave correctly.
+- Signature pad interactions, validating pointer drawing, undo/clear behaviour, orientation guards, and PNG export callback wiring.
+
+Run everything locally with:
+
+```bash
+npm run test
+```
+
+Vitest runs in a jsdom environment that includes mocked wake-lock, media, and canvas APIs—no additional browser setup required.
 
 ## Troubleshooting
 
