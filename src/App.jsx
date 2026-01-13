@@ -5,7 +5,7 @@ import './App.css'
 function App() {
    return (
       <div style={{ padding: 24 }}>
-          <SignaturePad/>
+          <WakeLockRecorder/>
       </div>
    )
 }
